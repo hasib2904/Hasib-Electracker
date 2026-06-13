@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ElecTracker by Hasib">
+<link rel="manifest" id="pwa-manifest">
+<script>
+// Inject PWA manifest dynamically with app name
+const manifest = {
+  name: "ElecTracker by Hasib",
+  short_name: "ElecTracker",
+  description: "Smart prepaid meter companion",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#0a0e1a",
+  theme_color: "#0a0e1a",
+  orientation: "portrait",
+  icons: [{
+    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230a0e1a'/%3E%3Ccircle cx='256' cy='256' r='200' fill='%23111' stroke='%23333' stroke-width='8'/%3E%3Cpolygon points='300,80 180,280 250,280 212,432 340,220 268,220' fill='url(%23bolt)'/%3E%3Cdefs%3E%3ClinearGradient id='bolt' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23ff4500'/%3E%3Cstop offset='100%25' stop-color='%23ff8c00'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E",
+    sizes: "512x512",
+    type: "image/svg+xml",
+    purpose: "any maskable"
+  }]
+};
+const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+</script>
+<title>ElecTracker — by Hasib</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0a0e1a;--bg2:#0f1525;--s1:#141c2e;--s2:#1a2440;--s3:#1e2a4a;
+  --bd:#1e2d4a;--bd2:#263660;
+  --hb:#3b82f6;--hb2:#60a5fa;--hbg:rgba(59,130,246,0.13);
+  --nb:#f59e0b;--nb2:#fbbf24;--nbg:rgba(245,158,11,0.10);
+  --gr:#10b981;--rd:#ef4444;--pu:#a78bfa;--cy:#22d3ee;
+  --t1:#e8edf8;--t2:#8b96b8;--t3:#3d4f6e;
+  --fh:'Syne',sans-serif;--fm:'JetBrains Mono',monospace;--fb:'Outfit',sans-serif;
+  --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);}
+body{font-family:var(--fb);font-size:14px;color:var(--t1);display:flex;flex-direction:column;position:fixed;width:100%;height:100%;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px;}
+.sc{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);transition:transform .28s cubic-bezier(.4,0,.2,1),opacity .28s;opacity:0;pointer-events:none;transform:translateY(20px);}
+.sc.active{opacity:1;pointer-events:all;transform:none;}
+
+/* SETUP SCREEN */
+#sc-setup{align-items:center;justify-content:flex-start;padding:24px 20px;overflow-y:auto;}
+.setup-logo{font-family:var(--fh);font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:2px;margin-top:20px;}
+.setup-logo span{color:var(--hb);}
+.setup-sub{font-size:10px;letter-spacing:3px;color:var(--t2);text-transform:uppercase;margin-bottom:28px;}
+.step-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:12px;width:100%;max-width:480px;}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--hb);color:#fff;font-size:11px;font-weight:700;font-family:var(--fm);margin-bottom:8px;}
+.step-title{font-family:var(--fh);font-size:14px;font-weight:700;margin-bottom:4px;}
+.step-body{font-size:12px;color:var(--t2);line-height:1.6;}
+.step-body b{color:var(--t1);}
+.step-body code{background:var(--s2);border:1px solid var(--bd2);border-radius:4px;padding:1px 6px;font-family:var(--fm);font-size:11px;color:var(--cy);}
+.cfg-card{background:var(--s1);border:1.5px solid var(--hb);border-radius:16px;padding:16px;margin-bottom:12px;width:100%;max-width:480px;}
+.cfg-title{font-family:var(--fh);font-size:15px;font-weight:700;color:var(--hb);margin-bottom:12px;}
+.skip-note{font-size:11px;color:var(--t3);text-align:center;margin-top:8px;}
+
+/* LOGIN */
+#sc-login{align-items:center;justify-content:center;padding:28px;}
+.ll{font-family:var(--fh);font-size:44px;font-weight:800;letter-spacing:-1.5px;margin-bottom:2px;}
+.ll span{color:var(--hb);}
+.lt{font-size:10px;letter-spacing:3px;color:var(--t2);text-transform:uppercase;margin-bottom:36px;}
+.lc{background:var(--s1);border:1px solid var(--bd);border-radius:20px;padding:22px;width:100%;max-width:340px;}
+.lhint{font-size:10px;color:var(--t3);margin-top:12px;text-align:center;}
+.sync-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:4px 10px;font-size:10px;color:var(--gr);font-family:var(--fm);margin-top:10px;}
+
+/* APP */
+#sc-app{flex-direction:column;}
+.tb{height:calc(54px + var(--st));padding-top:var(--st);background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0;}
+.tbi{display:flex;align-items:center;justify-content:space-between;padding:0 14px 10px;height:54px;}
+.tbl{font-family:var(--fh);font-size:17px;font-weight:800;letter-spacing:-.5px;}
+.tbl span{color:var(--hb);}
+.tbr{display:flex;align-items:center;gap:7px;}
+.ck{background:var(--s1);border:1px solid var(--bd2);border-radius:20px;padding:4px 10px;font-family:var(--fm);font-size:11px;color:var(--hb);}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--gr);display:inline-block;margin-right:2px;}
+.sync-dot.off{background:var(--rd);}
+.sync-dot.wait{background:var(--nb);animation:bl 1s infinite;}
+
+.pages{flex:1;overflow:hidden;position:relative;}
+.pg{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px calc(72px + var(--sb));display:none;}
+.pg.active{display:block;}
+.bn{height:calc(58px + var(--sb));padding-bottom:var(--sb);background:var(--bg2);border-top:1px solid var(--bd);display:flex;flex-shrink:0;}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--t3);transition:color .15s;}
+.bni.active{color:var(--hb);}
+.bni-icon{font-size:19px;line-height:1;}
+.bni-lbl{font-size:9px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:11px;}
+.ctitle{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--t2);margin-bottom:10px;font-family:var(--fm);}
+.hero{background:linear-gradient(140deg,var(--s1),var(--s2));border:1px solid var(--bd2);border-radius:18px;padding:18px;margin-bottom:11px;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;top:-50px;right:-40px;width:150px;height:150px;background:radial-gradient(circle,rgba(59,130,246,.1),transparent 70%);pointer-events:none;}
+.hl{font-size:9px;letter-spacing:2px;color:var(--hb);text-transform:uppercase;margin-bottom:5px;font-family:var(--fm);}
+.hbal{font-family:var(--fh);font-size:36px;font-weight:800;letter-spacing:-1px;line-height:1;}
+.hsub{font-size:11px;color:var(--t2);margin-top:5px;}
+.hbar-w{background:var(--s3);border-radius:5px;height:5px;margin-top:12px;overflow:hidden;}
+.hbar{height:100%;border-radius:5px;transition:width .5s ease;}
+.hmeta{display:flex;justify-content:space-between;margin-top:5px;font-size:9px;color:var(--t3);font-family:var(--fm);}
+.lpill{display:inline-flex;align-items:center;gap:4px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.18);border-radius:10px;padding:3px 8px;font-size:9px;color:var(--gr);font-family:var(--fm);}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--gr);animation:bl 1.2s infinite;}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.1}}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px;}
+.sc2{background:var(--s1);border:1px solid var(--bd);border-radius:13px;padding:13px;}
+.slbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--t2);margin-bottom:4px;font-family:var(--fm);}
+.sval{font-family:var(--fm);font-size:19px;font-weight:600;line-height:1;}
+.ssub{font-size:9px;color:var(--t3);margin-top:2px;}
+.split{background:var(--s1);border:1px solid var(--bd);border-radius:14px;overflow:hidden;margin-bottom:11px;}
+.split-hdr{padding:10px 14px;border-bottom:1px solid var(--bd);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--t2);font-family:var(--fm);}
+.split-row{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--bd);}
+.split-row:last-of-type{border-bottom:none;}
+.sdot{width:7px;height:7px;border-radius:50%;margin-right:9px;flex-shrink:0;}
+.sname{font-size:12px;font-weight:500;flex:1;}
+.sunits{font-family:var(--fm);font-size:11px;color:var(--t2);margin-right:10px;}
+.sbill{font-family:var(--fm);font-size:13px;font-weight:600;}
+.sbar{height:3px;display:flex;overflow:hidden;}
+.sbar-h{background:var(--hb);}
+.sbar-n{background:var(--nb);}
+.btn{border:none;border-radius:10px;cursor:pointer;font-family:var(--fb);font-size:12px;font-weight:600;padding:9px 16px;transition:opacity .15s,transform .12s;display:inline-flex;align-items:center;gap:5px;justify-content:center;}
+.btn:active{opacity:.8;transform:scale(.96);}
+.btn-hb{background:var(--hb);color:#fff;}
+.btn-nb{background:var(--nb);color:#111;}
+.btn-gh{background:var(--s2);border:1px solid var(--bd2);color:var(--t2);}
+.btn-rd{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.22);color:var(--rd);}
+.btn-gr{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.22);color:var(--gr);}
+.btn-fw{width:100%;margin-top:7px;}
+.btn-sm{padding:5px 11px;font-size:11px;}
+.btn-ic{width:34px;height:34px;padding:0;border-radius:9px;}
+.fg{margin-bottom:11px;}
+.fl{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:1px;font-family:var(--fm);display:block;margin-bottom:4px;}
+.fi{background:var(--s2);border:1.5px solid var(--bd2);border-radius:9px;color:var(--t1);font-family:var(--fb);font-size:13px;padding:10px 12px;outline:none;transition:border .18s;width:100%;}
+.fi:focus{border-color:var(--hb);}
+.fi::placeholder{color:var(--t3);}
+select.fi option{background:var(--s2);}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fsec{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px;}
+.fsec-t{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:1px;font-family:var(--fm);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--bd);}
+.sov{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);z-index:100;opacity:0;pointer-events:none;transition:opacity .22s;}
+.sov.open{opacity:1;pointer-events:all;}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-radius:18px 18px 0 0;border-top:1px solid var(--bd2);z-index:101;padding:0 0 calc(14px + var(--sb));max-height:91vh;overflow-y:auto;transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);}
+.sov.open .sheet{transform:none;}
+.sh{width:34px;height:4px;background:var(--bd2);border-radius:4px;margin:11px auto 14px;}
+.stitle{font-family:var(--fh);font-size:17px;font-weight:700;padding:0 18px 3px;}
+.ssub2{font-size:11px;color:var(--t2);padding:0 18px 14px;}
+.sbody{padding:0 14px;}
+.sfooter{padding:10px 14px 0;display:flex;gap:7px;}
+.li{background:var(--s1);border:1px solid var(--bd);border-radius:11px;padding:11px 12px;margin-bottom:7px;display:flex;gap:10px;align-items:flex-start;}
+.li-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.li-body{flex:1;min-width:0;}
+.li-title{font-size:12px;font-weight:500;}
+.li-sub{font-size:10px;color:var(--t2);margin-top:2px;}
+.li-date{font-size:9px;color:var(--t3);font-family:var(--fm);margin-top:2px;}
+.li-right{text-align:right;flex-shrink:0;}
+.badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.bh{background:rgba(59,130,246,.12);color:var(--hb);}
+.bn2{background:rgba(245,158,11,.12);color:var(--nb);}
+.bg{background:rgba(16,185,129,.12);color:var(--gr);}
+.br{background:rgba(239,68,68,.12);color:var(--rd);}
+.bp{background:rgba(167,139,250,.12);color:var(--pu);}
+.ai2{background:var(--s1);border:1px solid var(--bd);border-radius:11px;padding:11px 12px;margin-bottom:7px;display:flex;align-items:center;gap:9px;}
+.ai-em{width:34px;height:34px;border-radius:9px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.ai-info{flex:1;min-width:0;}
+.ai-name{font-size:12px;font-weight:500;}
+.ai-det{font-size:9px;color:var(--t2);margin-top:2px;font-family:var(--fm);}
+.ai-kwh{font-family:var(--fm);font-size:10px;margin-top:2px;}
+.owcard{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.03));border:1.5px solid rgba(245,158,11,.22);border-radius:13px;padding:12px 14px;margin-bottom:11px;display:flex;align-items:center;justify-content:space-between;}
+.ow-lbl{font-size:9px;color:var(--nb);text-transform:uppercase;letter-spacing:1px;font-family:var(--fm);margin-bottom:2px;}
+.ow-amt{font-family:var(--fm);font-size:20px;font-weight:600;color:var(--nb);}
+.ow-sub{font-size:10px;color:var(--t2);}
+.qg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:11px;}
+.qbtn{background:var(--s2);border:1.5px solid var(--bd2);border-radius:11px;padding:11px 9px;cursor:pointer;transition:all .18s;}
+.qbtn:active{transform:scale(.95);}
+.qi{font-size:18px;margin-bottom:4px;}
+.qn{font-size:10px;font-weight:600;color:var(--t1);}
+.qk{font-family:var(--fm);font-size:9px;color:var(--hb);margin-top:2px;}
+.htabs{display:flex;gap:5px;margin-bottom:11px;}
+.htab{flex:1;padding:9px 6px;border-radius:11px;border:1.5px solid var(--bd);background:none;font-family:var(--fb);font-size:11px;font-weight:600;cursor:pointer;text-align:center;color:var(--t3);transition:all .18s;}.htab:not(.hb):not(.nb):not(.gr){color:var(--t3)!important;border-color:var(--bd)!important;background:none!important;}
+.htab.hb{color:var(--hb);border-color:var(--hb);background:var(--hbg);}
+.htab.nb{color:var(--nb);border-color:var(--nb);background:var(--nbg);}
+.htab.gr{color:var(--gr);border-color:var(--gr);background:rgba(16,185,129,.08);}
+.mnav{display:flex;align-items:center;gap:9px;margin-bottom:13px;}
+.mnav button{background:var(--s2);border:1.5px solid var(--bd2);color:var(--t1);border-radius:9px;padding:6px 14px;cursor:pointer;font-size:17px;}
+.mnav span{font-family:var(--fh);font-size:14px;font-weight:700;flex:1;text-align:center;}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bd);}
+.srow:last-child{border-bottom:none;}
+.sinfo h4{font-size:12px;font-weight:500;}
+.sinfo p{font-size:10px;color:var(--t2);margin-top:1px;}
+.shdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.stit{font-family:var(--fh);font-size:14px;font-weight:700;}
+.oweit{background:var(--s1);border:1px solid var(--bd);border-radius:11px;padding:11px 12px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+.ua{background:var(--s2);border:1.5px dashed var(--bd2);border-radius:11px;padding:18px;text-align:center;cursor:pointer;transition:all .18s;margin-bottom:9px;}
+.ua:active{border-color:var(--hb);}
+.ua input{display:none;}
+#imgprev{width:100%;max-height:130px;object-fit:contain;border-radius:7px;margin-top:9px;display:none;}
+.aipill{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:7px;padding:7px 11px;font-size:10px;color:var(--hb);font-family:var(--fm);margin-bottom:9px;display:none;}
+.bwo{display:flex;align-items:flex-end;gap:3px;}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.btr{width:100%;display:flex;align-items:flex-end;}
+.bb{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:height .4s ease;}
+.blbl{font-size:8px;color:var(--t3);font-family:var(--fm);}
+.toast{position:fixed;bottom:calc(64px + var(--sb) + 10px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--s2);border:1px solid var(--bd2);border-radius:9px;padding:9px 16px;font-size:11px;z-index:999;opacity:0;transition:all .22s;pointer-events:none;white-space:nowrap;max-width:88vw;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.ok{border-color:rgba(16,185,129,.4);color:var(--gr);}
+.toast.err{border-color:rgba(239,68,68,.4);color:var(--rd);}
+.empty{text-align:center;padding:28px 16px;color:var(--t3);}
+.empty-ic{font-size:32px;margin-bottom:7px;}
+
+/* SYNC OVERLAY */
+.sync-overlay{position:fixed;inset:0;background:rgba(10,14,26,.85);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.sync-spinner{width:40px;height:40px;border:3px solid var(--bd2);border-top-color:var(--hb);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sync-txt{font-family:var(--fm);font-size:12px;color:var(--t2);}
+</style>
+</head>
+<body>
+
+<!-- ===== SETUP SCREEN ===== -->
+<div class="sc" id="sc-setup">
+  <div class="setup-logo">Elec<span>Tracker</span></div>
+  <div class="setup-sub">Firebase Already Configured ✅</div>
+
+  <div class="step-card">
+    <div class="step-num">1</div>
+    <div class="step-title">Create a Free Firebase Project</div>
+    <div class="step-body">
+      Go to <b>console.firebase.google.com</b> and sign in with your Gmail.<br><br>
+      Tap <b>"Add project"</b> → Name it <b>ElecTracker</b> → Disable Google Analytics → Click <b>"Create project"</b>.
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num">2</div>
+    <div class="step-title">Enable Realtime Database</div>
+    <div class="step-body">
+      In your project, go to <b>Build → Realtime Database</b> → Click <b>"Create database"</b>.<br><br>
+      Choose any location → Select <b>"Start in test mode"</b> → Click <b>Enable</b>.<br><br>
+      Your database URL will look like: <code>https://electracker-xxxxx-default-rtdb.firebaseio.com</code>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num">3</div>
+    <div class="step-title">Get Your Web App Config</div>
+    <div class="step-body">
+      Go to <b>Project Settings</b> (gear icon ⚙️ top left) → Scroll down to <b>"Your apps"</b> → Click <b>&lt;/&gt; Web</b>.<br><br>
+      Register app with nickname <b>ElecTracker</b> → You'll see a config block like:<br><br>
+      <code>apiKey: "AIza..."</code><br>
+      <code>authDomain: "..."</code><br>
+      <code>databaseURL: "..."</code><br>
+      <code>projectId: "..."</code><br>
+      <code>appId: "..."</code><br><br>
+      Copy and paste each value below 👇
+    </div>
+  </div>
+
+  <div class="cfg-card">
+    <div class="cfg-title">⚡ Paste Your Firebase Config</div>
+    <div class="fg"><label class="fl">API Key</label><input class="fi" id="cfg-apikey" placeholder="AIzaSy..."></div>
+    <div class="fg"><label class="fl">Auth Domain</label><input class="fi" id="cfg-auth" placeholder="your-app.firebaseapp.com"></div>
+    <div class="fg"><label class="fl">Database URL</label><input class="fi" id="cfg-dburl" placeholder="https://your-app-default-rtdb.firebaseio.com"></div>
+    <div class="fg"><label class="fl">Project ID</label><input class="fi" id="cfg-projid" placeholder="your-app-12345"></div>
+    <div class="fg" style="margin-bottom:0"><label class="fl">App ID</label><input class="fi" id="cfg-appid" placeholder="1:123456:web:abc123"></div>
+    <button class="btn btn-hb btn-fw" onclick="saveFirebaseCfg()">🚀 Connect & Launch</button>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num">4</div>
+    <div class="step-title">Share With Family</div>
+    <div class="step-body">
+      Once connected, <b>open this same HTML file on every device</b> and enter the same Firebase config. All devices will sync in real-time automatically — readings, top-ups, appliances, everything.<br><br>
+      Or tap <b>"Export Config"</b> after setup to share a pre-filled version of this file.
+    </div>
+  </div>
+
+  <div style="width:100%;max-width:480px;margin-bottom:20px;">
+    <button class="btn btn-gh btn-fw" onclick="skipSetup()" style="font-size:11px;">Skip — Use Local Storage Only (single device)</button>
+  </div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div class="sc" id="sc-login">
+  <div style="margin-bottom:14px;filter:drop-shadow(0 0 18px rgba(255,68,0,0.45));"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="88" height="88">
+  <defs>
+    <radialGradient id="lglow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2a2a2a"/>
+      <stop offset="100%" stop-color="#111"/>
+    </radialGradient>
+    <linearGradient id="lbolt" x1="0.3" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#ff2200"/>
+      <stop offset="50%" stop-color="#ff4400"/>
+      <stop offset="100%" stop-color="#ff8800"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="url(#lglow)" stroke="#444" stroke-width="2"/>
+  <circle cx="60" cy="60" r="46" fill="white"/>
+  <polygon points="72,14 38,62 57,62 48,106 82,54 62,54" fill="url(#lbolt)" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+</svg></div>
+  <div class="ll">Elec<span>Tracker</span></div>
+  <div class="lt">by Hasib · Smart Meter Companion</div>
+  <div class="lc">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
+      <span class="sync-dot" id="login-sync-dot"></span>
+      <span style="font-size:11px;color:var(--t2);font-family:var(--fm);" id="login-sync-txt">Checking sync...</span>
+    </div>
+    <div class="fg"><label class="fl">Username</label><input class="fi" id="lu" value="admin"></div>
+    <div class="fg" style="margin-bottom:0"><label class="fl">Password</label><input class="fi" id="lp" type="password" value="admin" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btn-hb btn-fw" onclick="doLogin()">⚡ Enter</button>
+  </div>
+  <div class="lhint">Family account · admin / admin</div>
+</div>
+
+<!-- ===== APP ===== -->
+<div class="sc" id="sc-app">
+  <div class="tb"><div class="tbi">
+    <div style="display:flex;flex-direction:column;line-height:1;">
+      <div class="tbl">Elec<span>Tracker</span></div>
+      <div style="font-size:9px;color:var(--t2);letter-spacing:2px;text-transform:uppercase;font-family:var(--fb);margin-top:1px;">by Hasib</div>
+    </div>
+    <div class="tbr">
+      <span class="sync-dot" id="app-sync-dot" title="Sync status"></span>
+      <div class="ck" id="ck">--:-- --</div>
+      <button class="btn btn-gh btn-sm" onclick="openS('sh-read')">📷 Log</button>
+      <button class="btn btn-hb btn-sm" onclick="openS('sh-top')">💳 Top Up</button>
+    </div>
+  </div></div>
+
+  <div class="pages">
+    <!-- HOME -->
+    <div class="pg active" id="pg-home">
+      <div class="hero" style="text-align:center;padding:22px 18px 20px;">
+        <!-- mini logo + label row -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="28" height="28">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2a2a2a"/>
+      <stop offset="100%" stop-color="#111"/>
+    </radialGradient>
+    <linearGradient id="bolt-grad" x1="0.3" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#ff2200"/>
+      <stop offset="50%" stop-color="#ff4400"/>
+      <stop offset="100%" stop-color="#ff8800"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ff4400" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="url(#glow)" stroke="#333" stroke-width="2"/>
+  <circle cx="60" cy="60" r="46" fill="white"/>
+  <polygon points="72,14 38,62 57,62 48,106 82,54 62,54" fill="url(#bolt-grad)" filter="url(#shadow)" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+</svg>
+          <div style="font-size:9px;letter-spacing:2px;color:var(--hb);text-transform:uppercase;font-family:var(--fm);">METER REMAINING BALANCE</div>
+        </div>
+        <!-- BIG TAKA DISPLAY -->
+        <div style="position:relative;display:inline-block;margin-bottom:6px;">
+          <div id="h-bal" style="font-family:var(--fh);font-size:52px;font-weight:800;letter-spacing:-1.5px;line-height:1;color:var(--t1);text-shadow:0 2px 24px rgba(59,130,246,0.18);">৳ 0.00</div>
+          <div style="position:absolute;top:-4px;right:-36px;display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <span class="ldot" style="width:7px;height:7px;"></span>
+            <span style="font-size:8px;color:var(--gr);font-family:var(--fm);letter-spacing:.5px;">LIVE</span>
+          </div>
+        </div>
+        <!-- kWh sub -->
+        <div id="h-kwh" style="font-family:var(--fm);font-size:13px;color:var(--hb);margin-bottom:14px;">≈ 0.0 kWh remaining</div>
+        <!-- progress bar -->
+        <div class="hbar-w" style="border-radius:8px;height:8px;margin-bottom:6px;"><div class="hbar" id="h-bar" style="width:0%;border-radius:8px;"></div></div>
+        <div class="hmeta" style="justify-content:center;gap:16px;">
+          <span id="h-pct" style="font-size:10px;">—</span>
+          <span style="color:var(--bd2)">·</span>
+          <span id="h-lr" style="font-size:10px;">No readings yet</span>
+        </div>
+        <!-- last read + active watts -->
+        <div style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span class="lpill"><span class="ldot"></span>TRACKING</span>
+          <span id="h-lw" style="font-size:9px;color:var(--t2);font-family:var(--fm);"></span>
+        </div>
+      </div>
+      <div class="owcard" id="owcard" style="display:none;">
+        <div><div class="ow-lbl">Neighbor Owes You</div><div class="ow-amt" id="ow-amt">৳ 0</div><div class="ow-sub" id="ow-sub"></div></div>
+        <button class="btn btn-nb btn-sm" onclick="goP('pg-nb')">View →</button>
+      </div>
+      <div class="split">
+        <div class="split-hdr">This Month — Bill Split</div>
+        <div class="split-row"><div class="sdot" style="background:var(--hb)"></div><div class="sname">🏠 Hasib</div><div class="sunits" id="sp-hu">0 kWh</div><div class="sbill" style="color:var(--hb)" id="sp-hb">৳0</div></div>
+        <div class="split-row"><div class="sdot" style="background:var(--nb)"></div><div class="sname" id="sp-nn">🏘️ Neighbor</div><div class="sunits" id="sp-nu">0 kWh</div><div class="sbill" style="color:var(--nb)" id="sp-nb2">৳0</div></div>
+        <div class="sbar" id="sp-bar"><div class="sbar-h" style="width:50%"></div><div class="sbar-n" style="width:50%"></div></div>
+      </div>
+      <div id="qw" style="display:none;margin-bottom:11px;">
+        <div class="ctitle" style="margin-bottom:7px;">⚡ Quick Log</div>
+        <div class="qg" id="qg"></div>
+      </div>
+      <div class="card"><div class="ctitle">7-Day Usage</div><div class="bwo" id="wk-ch" style="height:65px;"></div></div>
+      <div class="shdr"><div class="stit">Recent Activity</div></div>
+      <div id="h-rec"></div>
+    </div>
+
+    <!-- HASIB -->
+    <div class="pg" id="pg-hasib">
+      <div class="htabs"><button class="htab hb">🏠 Hasib's Household</button></div>
+      <div class="sg">
+        <div class="sc2"><div class="slbl">My Units (Month)</div><div class="sval" style="color:var(--hb)" id="hb-mu">—</div><div class="ssub">kWh</div></div>
+        <div class="sc2"><div class="slbl">My Bill</div><div class="sval" style="color:var(--gr)" id="hb-mb">৳—</div><div class="ssub">my share</div></div>
+        <div class="sc2"><div class="slbl">Daily Avg</div><div class="sval" style="color:var(--pu)" id="hb-av">—</div><div class="ssub">kWh/day</div></div>
+        <div class="sc2"><div class="slbl">Recharged</div><div class="sval" style="color:var(--cy)" id="hb-tp">৳—</div><div class="ssub">this month</div></div>
+      </div>
+      <div class="shdr"><div class="stit">My Appliances</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-gh btn-sm" onclick="openAI('h')">🤖 AI</button>
+          <button class="btn btn-hb btn-sm" onclick="openAddA('h')">+ Add</button>
+        </div>
+      </div>
+      <div id="hb-al"></div>
+      <div class="card" style="margin-top:4px;"><div class="ctitle">6-Month Trend</div><div class="bwo" id="hb-ch" style="height:65px;"></div></div>
+    </div>
+
+    <!-- NEIGHBOR -->
+    <div class="pg" id="pg-nb">
+      <div class="htabs"><button class="htab nb">🏘️ <span id="nb-tn">Neighbor</span>'s Household</button></div>
+      <div class="sg">
+        <div class="sc2"><div class="slbl">Their Units (Month)</div><div class="sval" style="color:var(--nb)" id="nb-mu">—</div><div class="ssub">kWh</div></div>
+        <div class="sc2"><div class="slbl">Their Bill</div><div class="sval" style="color:var(--rd)" id="nb-mb">৳—</div><div class="ssub">owes you</div></div>
+        <div class="sc2"><div class="slbl">Total Owed</div><div class="sval" style="color:var(--nb)" id="nb-ow">৳—</div><div class="ssub">outstanding</div></div>
+        <div class="sc2"><div class="slbl">Total Paid</div><div class="sval" style="color:var(--gr)" id="nb-pd">৳—</div><div class="ssub">all time</div></div>
+      </div>
+      <div class="shdr"><div class="stit">Payment Tracker</div><button class="btn btn-gr btn-sm" onclick="openS('sh-nbpay')">+ Mark Paid</button></div>
+      <div id="nb-owlist"></div>
+      <div class="shdr" style="margin-top:14px;"><div class="stit">Their Appliances</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-gh btn-sm" onclick="openAI('n')">🤖 AI</button>
+          <button class="btn btn-nb btn-sm" onclick="openAddA('n')">+ Add</button>
+        </div>
+      </div>
+      <div id="nb-al"></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="pg" id="pg-hist">
+      <div class="htabs">
+        <button class="htab hb" id="ht-r" onclick="swHT('r',this)">Readings</button>
+        <button class="htab" id="ht-t" onclick="swHT('t',this)" style="color:var(--t3)">Top-Ups</button>
+        <button class="htab" id="ht-s" onclick="swHT('s',this)" style="color:var(--t3)">Sessions</button>
+      </div>
+      <div id="ht-rl"></div>
+      <div id="ht-tl" style="display:none"></div>
+      <div id="ht-sl" style="display:none"></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="pg" id="pg-rpt">
+      <div class="mnav"><button onclick="chM(-1)">‹</button><span id="rpt-ml">—</span><button onclick="chM(1)">›</button></div>
+      <div class="split">
+        <div class="split-hdr">Total Meter Bill This Month</div>
+        <div style="padding:12px 14px;"><div style="font-family:var(--fm);font-size:26px;font-weight:600" id="rpt-tb">৳—</div><div style="font-size:10px;color:var(--t2);margin-top:3px" id="rpt-tu">—</div></div>
+        <div class="split-row"><div class="sdot" style="background:var(--hb)"></div><div class="sname">Hasib</div><div class="sunits" id="rpt-hu">—</div><div class="sbill" style="color:var(--hb)" id="rpt-hb">৳—</div></div>
+        <div class="split-row"><div class="sdot" style="background:var(--nb)"></div><div class="sname" id="rpt-nn">Neighbor</div><div class="sunits" id="rpt-nu">—</div><div class="sbill" style="color:var(--nb)" id="rpt-nb2">৳—</div></div>
+        <div class="sbar" id="rpt-bar"><div class="sbar-h" style="width:50%"></div><div class="sbar-n" style="width:50%"></div></div>
+      </div>
+      <div class="shdr"><div class="stit">Slab Breakdown</div></div>
+      <div id="rpt-slabs"></div>
+      <div class="card" style="margin-top:4px;"><div class="ctitle">Daily kWh This Month</div><div class="bwo" id="rpt-dc" style="height:75px;"></div></div>
+      <div class="shdr" style="margin-top:4px;"><div class="stit">Yearly <span style="font-size:11px;color:var(--t2)" id="rpt-yl"></span></div></div>
+      <div class="sg">
+        <div class="sc2"><div class="slbl">Total Units</div><div class="sval" style="color:var(--hb)" id="y-u">—</div></div>
+        <div class="sc2"><div class="slbl">Total Bill</div><div class="sval" style="color:var(--gr)" id="y-b">৳—</div></div>
+        <div class="sc2"><div class="slbl">Recharged</div><div class="sval" style="color:var(--cy)" id="y-t">৳—</div></div>
+        <div class="sc2"><div class="slbl">Peak Month</div><div class="sval" style="color:var(--nb)" id="y-p">—</div></div>
+      </div>
+      <div class="card"><div class="ctitle">Monthly kWh</div><div class="bwo" id="y-ch" style="height:75px;"></div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="pg" id="pg-cfg">
+      <div class="card" style="margin-bottom:11px;">
+        <div class="ctitle">Sync Status</div>
+        <div class="srow"><div class="sinfo"><h4>Firebase Connection</h4><p id="cfg-sync-status">Checking...</p></div><span class="sync-dot" id="cfg-sync-dot"></span></div>
+        <div class="srow"><div class="sinfo"><h4>Reconfigure Firebase</h4><p>Change database connection</p></div><button class="btn btn-gh btn-sm" onclick="goSetup()">Configure</button></div>
+        <div class="srow"><div class="sinfo"><h4>Export Pre-filled App</h4><p>Share with family — config included</p></div><button class="btn btn-hb btn-sm" onclick="exportApp()">📤 Share</button></div>
+      </div>
+      <div class="card" style="margin-bottom:11px;">
+        <div class="ctitle">Account</div>
+        <div class="srow"><div class="sinfo"><h4>Family Account</h4><p>admin — shared across all devices</p></div><button class="btn btn-gh btn-sm" onclick="doOut()">Logout</button></div>
+      </div>
+      <div class="card" style="margin-bottom:11px;">
+        <div class="ctitle">Neighbor</div>
+        <div class="srow"><div class="sinfo"><h4>Neighbor Name</h4></div><input class="fi" id="nb-ni" style="width:120px;text-align:right;padding:6px 10px;" placeholder="Neighbor" oninput="saveNN()"></div>
+      </div>
+      <div class="card" style="margin-bottom:11px;">
+        <div class="ctitle">Bangladesh BPDB LT-A Tariff</div>
+        <div class="srow"><div class="sinfo"><h4>Life line 0–50</h4></div><span style="font-family:var(--fm);font-size:11px;color:var(--t2)">৳5.02</span></div>
+        <div class="srow"><div class="sinfo"><h4>Step 1 (51–75)</h4></div><span style="font-family:var(--fm);font-size:11px;color:var(--t2)">৳6.18</span></div>
+        <div class="srow"><div class="sinfo"><h4>Step 2 (76–200)</h4></div><span style="font-family:var(--fm);font-size:11px;color:var(--t2)">৳8.50</span></div>
+        <div class="srow"><div class="sinfo"><h4>Step 3 (201–300)</h4></div><span style="font-family:var(--fm);font-size:11px;color:var(--t2)">৳9.10</span></div>
+        <div class="srow"><div class="sinfo"><h4>Step 4 (301–400)</h4></div><span style="font-family:var(--fm);font-size:11px;color:var(--t2)">৳9.62</span></div>
+        <div class="srow"><div class="sinfo"><h4>Step 5 (401–600)</h4></div><span style="font-family:var(--fm);font-size:11px;color:var(--t2)">৳15.01</span></div>
+        <div class="srow"><div class="sinfo"><h4>Step 6 (601+)</h4></div><span style="font-family:var(--fm);font-size:11px;color:var(--t2)">৳17.35</span></div>
+        <div class="srow"><div class="sinfo"><h4>Demand + Meter + VAT</h4></div><span style="font-family:var(--fm);font-size:11px;color:var(--t2)">৳84 + ৳40 + 5%</span></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Data</div>
+        <div class="srow"><div class="sinfo"><h4>Export JSON Backup</h4></div><button class="btn btn-gh btn-sm" onclick="exportD()">⬇</button></div>
+        <div class="srow"><div class="sinfo"><h4>Clear Readings</h4></div><button class="btn btn-rd btn-sm" onclick="clearR()">Clear</button></div>
+        <div class="srow"><div class="sinfo"><h4>Factory Reset</h4></div><button class="btn btn-rd btn-sm" onclick="resetAll()">Reset</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bn">
+    <div class="bni active" id="bn-home" onclick="goP('pg-home',this)"><div class="bni-icon">🏠</div><div class="bni-lbl">Home</div></div>
+    <div class="bni" id="bn-hasib" onclick="goP('pg-hasib',this)"><div class="bni-icon">👤</div><div class="bni-lbl">Hasib</div></div>
+    <div class="bni" id="bn-nb" onclick="goP('pg-nb',this)"><div class="bni-icon">🏘️</div><div class="bni-lbl">Neighbor</div></div>
+    <div class="bni" id="bn-hist" onclick="goP('pg-hist',this)"><div class="bni-icon">📋</div><div class="bni-lbl">History</div></div>
+    <div class="bni" id="bn-rpt" onclick="goP('pg-rpt',this)"><div class="bni-icon">📊</div><div class="bni-lbl">Reports</div></div>
+    <div class="bni" id="bn-cfg" onclick="goP('pg-cfg',this)"><div class="bni-icon">⚙️</div><div class="bni-lbl">Settings</div></div>
+  </div>
+</div>
+
+<!-- SHEETS -->
+<div class="sov" id="sh-read"><div class="sheet">
+  <div class="sh"></div><div class="stitle">📷 Log Meter Reading</div>
+  <div class="ssub2">Shared meter · total balance + each household's kWh</div>
+  <div class="sbody">
+    <div class="ua" onclick="document.getElementById('mii').click()">
+      <div style="font-size:24px">📸</div>
+      <div style="font-size:11px;margin-top:3px;font-weight:500">Upload meter photo — AI reads balance</div>
+      <input type="file" id="mii" accept="image/*" onchange="handleImg(event)">
+      <img id="imgprev">
+    </div>
+    <div class="aipill" id="aip"></div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="rd"></div>
+      <div class="fg"><label class="fl">Balance (৳)</label><input class="fi" type="number" id="rb" placeholder="e.g. 1240" step="0.01"></div>
+    </div>
+    <div class="fsec">
+      <div class="fsec-t">🏠 Hasib — kWh this period</div>
+      <div class="fg" style="margin-bottom:0"><input class="fi" type="number" id="rhk" placeholder="e.g. 45.5" step="0.1"></div>
+    </div>
+    <div class="fsec" style="border-color:rgba(245,158,11,.22)">
+      <div class="fsec-t" style="color:var(--nb)">🏘️ Neighbor — kWh this period</div>
+      <div class="fg" style="margin-bottom:0"><input class="fi" type="number" id="rnk" placeholder="e.g. 30.2" step="0.1"></div>
+    </div>
+    <div class="fg"><label class="fl">Note</label><input class="fi" type="text" id="rno" placeholder="Optional..."></div>
+  </div>
+  <div class="sfooter">
+    <button class="btn btn-gh" style="flex:1" onclick="closeS('sh-read')">Cancel</button>
+    <button class="btn btn-hb" style="flex:2" onclick="saveR()">Save Reading</button>
+  </div>
+</div></div>
+
+<div class="sov" id="sh-top"><div class="sheet">
+  <div class="sh"></div><div class="stitle">💳 Log Recharge</div>
+  <div class="ssub2">Record prepaid meter top-up</div>
+  <div class="sbody">
+    <div class="fr">
+      <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="td"></div>
+      <div class="fg"><label class="fl">Amount (৳)</label><input class="fi" type="number" id="ta" placeholder="e.g. 3000"></div>
+    </div>
+    <div class="fg"><label class="fl">Balance after (৳) — optional</label><input class="fi" type="number" id="tba" placeholder="Balance after recharge" step="0.01"></div>
+    <div class="fg"><label class="fl">Note</label><input class="fi" type="text" id="tn2" placeholder="e.g. bKash payment"></div>
+  </div>
+  <div class="sfooter">
+    <button class="btn btn-gh" style="flex:1" onclick="closeS('sh-top')">Cancel</button>
+    <button class="btn btn-hb" style="flex:2" onclick="saveT()">Save</button>
+  </div>
+</div></div>
+
+<div class="sov" id="sh-appl"><div class="sheet">
+  <div class="sh"></div><div class="stitle" id="as-t">Add Appliance</div><div class="ssub2" id="as-s"></div>
+  <input type="hidden" id="ao"><input type="hidden" id="aeid">
+  <div class="sbody">
+    <div class="fr">
+      <div class="fg"><label class="fl">Name</label><input class="fi" id="an" placeholder="e.g. Bedroom AC"></div>
+      <div class="fg"><label class="fl">Icon</label><input class="fi" id="aic2" placeholder="❄️" style="font-size:18px" maxlength="4"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Wattage (W)</label><input class="fi" type="number" id="aw" placeholder="1800"></div>
+      <div class="fg"><label class="fl">Hours/day</label><input class="fi" type="number" id="ah" placeholder="12" step="0.5"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Duty cycle %</label><input class="fi" type="number" id="ad" placeholder="85" max="100"></div>
+      <div class="fg"><label class="fl">Category</label>
+        <select class="fi" id="ac2"><option>Cooling</option><option>Lighting</option><option>Refrigeration</option><option>Entertainment</option><option>Kitchen</option><option>Other</option></select>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;padding:8px 0;">
+      <input type="checkbox" id="acom" style="width:17px;height:17px;">
+      <label for="acom" style="font-size:12px;color:var(--t2)">Add Quick Log shortcut on Home</label>
+    </div>
+  </div>
+  <div class="sfooter">
+    <button class="btn btn-gh" style="flex:1" onclick="closeS('sh-appl')">Cancel</button>
+    <button class="btn btn-hb" style="flex:2" onclick="saveA()">Save</button>
+  </div>
+</div></div>
+
+<div class="sov" id="sh-ai"><div class="sheet">
+  <div class="sh"></div><div class="stitle">🤖 AI Appliance Parser</div>
+  <div class="ssub2">Describe appliances in plain language</div>
+  <input type="hidden" id="aiao">
+  <div class="sbody">
+    <div class="fg"><label class="fl">Describe your appliances</label>
+      <textarea class="fi" id="ait" rows="3" placeholder="e.g. 2 ceiling fans 16 hours, 1.5 ton non-inverter AC 12 hours, 2 LED lights 20W 8 hours, 210L deep freezer..."></textarea>
+    </div>
+    <div class="aipill" id="aipp" style="display:block">💡 Mention quantity, type, and daily hours</div>
+    <div id="aiprev"></div>
+  </div>
+  <div class="sfooter">
+    <button class="btn btn-gh" style="flex:1" onclick="closeS('sh-ai')">Cancel</button>
+    <button class="btn btn-hb" style="flex:2" id="aipb" onclick="parseAI()">🤖 Parse</button>
+    <button class="btn btn-gr" style="flex:2;display:none" id="aicb" onclick="confirmAI()">✓ Add All</button>
+  </div>
+</div></div>
+
+<div class="sov" id="sh-nbpay"><div class="sheet">
+  <div class="sh"></div><div class="stitle">💚 Mark Payment Received</div>
+  <div class="ssub2">Record payment from neighbor</div>
+  <div class="sbody">
+    <div class="fr">
+      <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="npd"></div>
+      <div class="fg"><label class="fl">Amount (৳)</label><input class="fi" type="number" id="npa" placeholder="e.g. 800"></div>
+    </div>
+    <div class="fg"><label class="fl">Note</label><input class="fi" type="text" id="npn" placeholder="e.g. Cash June"></div>
+  </div>
+  <div class="sfooter">
+    <button class="btn btn-gh" style="flex:1" onclick="closeS('sh-nbpay')">Cancel</button>
+    <button class="btn btn-gr" style="flex:2" onclick="saveNBP()">Save Payment</button>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<div class="sync-overlay" id="sync-overlay" style="display:none;">
+  <div class="sync-spinner"></div>
+  <div class="sync-txt" id="sync-msg">Syncing with Firebase...</div>
+</div>
+
+<script type="module">
+// ===== FIREBASE DYNAMIC IMPORT =====
+const DK = 'et_v5_local';
+const SLABS=[{to:50,r:5.02},{to:75,r:6.18},{to:200,r:8.50},{to:300,r:9.10},{to:400,r:9.62},{to:600,r:15.01},{to:Infinity,r:17.35}];
+const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const FM=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+let _db = null; // firebase db reference
+let _fbApp = null;
+let _localMode = false;
+let _D = null; // in-memory data
+
+// ===== FIREBASE SETUP =====
+function getCfg(){
+    return {
+      apiKey: "AIzaSyDkh6LaXa3u5xCq21z0y3t8JGRbWV6h-Cs",
+      authDomain: "electracker-d735c.firebaseapp.com",
+      databaseURL: "https://electracker-d735c-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "electracker-d735c",
+      storageBucket: "electracker-d735c.firebasestorage.app",
+      messagingSenderId: "281497034621",
+      appId: "1:281497034621:web:be823f9c4696e14a2e7614"
+    };
+  }
+
+window.saveFirebaseCfg = async function(){
+  const apiKey=v('cfg-apikey'),authDomain=v('cfg-auth'),databaseURL=v('cfg-dburl'),projectId=v('cfg-projid'),appId=v('cfg-appid');
+  if(!apiKey||!databaseURL||!projectId){toast('Please fill API Key, Database URL and Project ID','err');return;}
+  if(!databaseURL.startsWith('https://')){toast('Database URL must start with https://','err');return;}
+  showSyncOverlay('Connecting to Firebase...');
+  const cfg={apiKey,authDomain,databaseURL,projectId,appId,storageBucket:`${projectId}.appspot.com`,messagingSenderId:'000000000000'};
+  const ok = await initFirebase(cfg);
+  hideSyncOverlay();
+  if(ok){goLogin();}else{toast('Connection failed — check your config','err');}
+};
+
+window.skipSetup = function(){
+  _localMode=true;
+  goLogin();
+};
+
+window.goSetup = function(){
+  toast('Firebase config is built-in — no reconfiguration needed ✅');
+};
+
+async function initFirebase(cfg){
+  try{
+    const {initializeApp,getApps} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const {getDatabase,ref,onValue,set,get} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    if(getApps().length===0) _fbApp = initializeApp(cfg);
+    else _fbApp = getApps()[0];
+    _db = getDatabase(_fbApp);
+    window._fbRef = ref;
+    window._fbOnValue = onValue;
+    window._fbSet = set;
+    window._fbGet = get;
+    window._fbDB = _db;
+    // test connection
+    const testRef = ref(_db,'__ping__');
+    await set(testRef, Date.now());
+    setSyncDot(true);
+    setupRealtimeListener();
+    return true;
+  }catch(e){
+    console.error('Firebase init error:',e);
+    setSyncDot(false);
+    return false;
+  }
+}
+
+function setupRealtimeListener(){
+  if(!_db) return;
+  const r = window._fbRef(_db,'electracker');
+  window._fbOnValue(r, snap=>{
+    const val = snap.val();
+    // val is null when DB is empty (first launch) — init fresh
+    _D = val || loadLocal() || freshDB();
+    // normalise every array field (Firebase stores arrays as objects keyed by id)
+    ['readings','topups','sessions','nbpay','hAppl','nAppl'].forEach(k=>{
+      if(!_D[k]) _D[k]=[];
+      else if(typeof _D[k]==='object' && !Array.isArray(_D[k])) _D[k]=Object.values(_D[k]);
+    });
+    if(!_D.hAppl||!_D.hAppl.length) _D.hAppl = defAppl('h');
+    if(!_D.nAppl||!_D.nAppl.length) _D.nAppl = defAppl('n');
+    if(!_D.nbName) _D.nbName = 'Neighbor';
+    if(!_D.lastTop) _D.lastTop = 0;
+    saveLocal(_D);
+    renderAll();
+    setSyncDot(true);
+  }, err=>{
+    console.error('Firebase listener error:',err);
+    setSyncDot(false);
+  });
+}
+
+async function pushToDB(data){
+  if(_localMode||!_db){saveLocal(data);return;}
+  try{
+    // convert arrays to objects for firebase
+    // deep clone so we don't mutate _D when converting arrays→objects
+  const payload = JSON.parse(JSON.stringify(data));
+  ['readings','topups','sessions','nbpay','hAppl','nAppl'].forEach(k=>{
+    if(Array.isArray(payload[k])){
+      const obj={};
+      payload[k].forEach((item,i)=>{obj[item.id||i]=item;});
+      payload[k]=obj;
+    }
+  });
+    await window._fbSet(window._fbRef(_db,'electracker'), payload);
+    setSyncDot(true);
+  }catch(e){
+    console.error('Firebase write error:',e);
+    setSyncDot(false);
+    saveLocal(data);
+    toast('Saved locally — sync failed','err');
+  }
+}
+
+function saveLocal(d){localStorage.setItem(DK,JSON.stringify(d));}
+function loadLocal(){try{return JSON.parse(localStorage.getItem(DK)||'null');}catch(e){return null;}}
+
+function setSyncDot(ok){
+  ['app-sync-dot','cfg-sync-dot','login-sync-dot'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.className='sync-dot'+(ok?'':' off');
+  });
+  const st=document.getElementById('cfg-sync-status');
+  if(st)st.textContent=_localMode?'Local mode (no sync)':ok?'Connected — syncing in real-time':'Disconnected';
+  const lt=document.getElementById('login-sync-txt');
+  if(lt)lt.textContent=_localMode?'Local mode only':ok?'Firebase connected — syncing all devices':'Offline — using local data';
+}
+
+function showSyncOverlay(msg){
+  document.getElementById('sync-msg').textContent=msg||'Syncing...';
+  document.getElementById('sync-overlay').style.display='flex';
+}
+function hideSyncOverlay(){document.getElementById('sync-overlay').style.display='none';}
+
+// ===== INIT =====
+async function appStart(){
+  showSyncOverlay('Connecting to Firebase...');
+  const ok = await initFirebase(getCfg());
+  hideSyncOverlay();
+  if(!ok){
+    _localMode=true;
+    _D = loadLocal()||freshDB();
+    setSyncDot(false);
+    toast('Firebase offline — using local mode','err');
+  }
+  goLogin();
+}
+
+function goLogin(){
+  document.querySelectorAll('.sc').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc-login').classList.add('active');
+  if(_localMode||!_db){
+    _D=loadLocal()||freshDB();
+    setSyncDot(false);
+  }
+}
+
+// ===== DATA =====
+function freshDB(){return{readings:[],topups:[],sessions:[],nbpay:[],hAppl:defAppl('h'),nAppl:defAppl('n'),nbName:'Neighbor',lastTop:0};}
+function defAppl(w){
+  if(w==='h')return[
+    {id:1,name:'AC 1.5T',icon:'❄️',watts:1800,hours:12,duty:85,cat:'Cooling',common:false,own:'h'},
+    {id:2,name:'Fan ×2',icon:'🌀',watts:150,hours:16,duty:100,cat:'Cooling',common:true,own:'h'},
+    {id:3,name:'LED ×2',icon:'💡',watts:40,hours:8,duty:100,cat:'Lighting',common:true,own:'h'},
+    {id:4,name:'Fridge 220L',icon:'🧊',watts:150,hours:24,duty:35,cat:'Refrigeration',common:false,own:'h'},
+    {id:5,name:'Deep Fridge 210L',icon:'🥶',watts:200,hours:24,duty:40,cat:'Refrigeration',common:false,own:'h'},
+    {id:6,name:'Deep Fridge 120L',icon:'❄',watts:150,hours:24,duty:35,cat:'Refrigeration',common:false,own:'h'},
+  ];
+  return[
+    {id:101,name:'Fan',icon:'🌀',watts:75,hours:12,duty:100,cat:'Cooling',common:false,own:'n'},
+    {id:102,name:'Light',icon:'💡',watts:20,hours:6,duty:100,cat:'Lighting',common:false,own:'n'},
+  ];
+}
+const D=()=>_D;
+
+// ===== CALCS =====
+function calcBill(u){
+  if(u<=0)return{energy:0,vat:0,total:0,rows:[]};
+  let rem=u,prev=0,en=0,rows=[];
+  for(const s of SLABS){
+    if(rem<=0)break;
+    const cap=s.to===Infinity?rem:Math.min(rem,s.to-prev);
+    const cost=cap*s.r;en+=cost;
+    rows.push({lbl:prev===0?`0–${s.to} kWh`:`${prev+1}–${s.to===Infinity?'∞':s.to} kWh`,u:cap,r:s.r,cost});
+    rem-=cap;if(s.to!==Infinity)prev=s.to;
+  }
+  const vat=en*0.05;return{energy:en,vat,total:en+vat+84+40,rows};
+}
+function uFromT(t){
+  if(t<=0)return 0;let rem=t,u=0,prev=0;
+  for(const s of SLABS){const cap=s.to===Infinity?Infinity:(s.to-prev);const mc=cap===Infinity?rem:cap*s.r;const sp=Math.min(rem,mc);u+=sp/s.r;rem-=sp;if(rem<=0)break;if(s.to!==Infinity)prev=s.to;}
+  return Math.max(0,u);
+}
+function dkwh(a){return a.watts*a.hours*(a.duty/100)/1000;}
+function f(n,d=0){return(+n||0).toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fD(s){if(!s)return'—';const d=new Date(s);return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function tod(){return new Date().toISOString().split('T')[0];}
+function mp(m,y){return`${y}-${String(m+1).padStart(2,'0')}`;}
+function v(id){return(document.getElementById(id)?.value||'').trim();}
+
+// ===== CLOCK =====
+function tick(){
+  const n=new Date();let h=n.getHours(),m=n.getMinutes(),s=n.getSeconds();
+  const ap=h>=12?'PM':'AM';h=h%12||12;
+  const el=document.getElementById('ck');
+  if(el)el.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${ap}`;
+}
+setInterval(tick,1000);tick();
+
+// ===== LOGIN =====
+window.doLogin=function(){
+  if(v('lu')==='admin'&&v('lp')==='admin'){
+    if(!_D)_D=loadLocal()||freshDB();
+    document.querySelectorAll('.sc').forEach(s=>s.classList.remove('active'));
+    document.getElementById('sc-app').classList.add('active');
+    loadCfg();
+    renderAll();
+  }else toast('Wrong credentials','err');
+};
+window.doOut=function(){document.querySelectorAll('.sc').forEach(s=>s.classList.remove('active'));document.getElementById('sc-login').classList.add('active');};
+document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')window.doLogin();});
+
+// ===== NAV =====
+const PGMAP={'pg-home':'bn-home','pg-hasib':'bn-hasib','pg-nb':'bn-nb','pg-hist':'bn-hist','pg-rpt':'bn-rpt','pg-cfg':'bn-cfg'};
+window.goP=function(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.bni').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const bn=document.getElementById(PGMAP[id]);if(bn)bn.classList.add('active');
+  if(id==='pg-home')rHome();
+  if(id==='pg-hasib')rHasib();
+  if(id==='pg-nb')rNB();
+  if(id==='pg-hist')rHist();
+  if(id==='pg-rpt')rRpt();
+  if(id==='pg-cfg')loadCfg();
+};
+window.swHT=function(tab,btn){
+  ['r','t','s'].forEach(x=>{
+    document.getElementById(`ht-${x}l`).style.display=x===tab?'':'none';
+    const b=document.getElementById(`ht-${x}`);
+    b.className='htab'+(x===tab?(tab==='t'?' nb':tab==='s'?' gr':' hb'):'');
+    b.style.color=''; // let CSS class handle color
+  });
+};
+
+// ===== SHEETS =====
+window.openS=function(id){
+  if(id==='sh-read'){document.getElementById('rd').value=tod();['rb','rhk','rnk','rno'].forEach(x=>document.getElementById(x).value='');document.getElementById('imgprev').style.display='none';document.getElementById('aip').style.display='none';}
+  if(id==='sh-top'){document.getElementById('td').value=tod();['ta','tba','tn2'].forEach(x=>document.getElementById(x).value='');}
+  if(id==='sh-nbpay'){document.getElementById('npd').value=tod();['npa','npn'].forEach(x=>document.getElementById(x).value='');}
+  document.getElementById(id).classList.add('open');
+};
+window.closeS=function(id){document.getElementById(id).classList.remove('open');};
+document.querySelectorAll('.sov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)window.closeS(o.id);}));
+
+// ===== AI METER =====
+window.handleImg=async function(e){
+  const f2=e.target.files[0];if(!f2)return;
+  const rd=new FileReader();
+  rd.onload=async ev=>{
+    const pr=document.getElementById('imgprev');pr.src=ev.target.result;pr.style.display='block';
+    const pip=document.getElementById('aip');pip.style.display='block';pip.textContent='⚡ Reading meter...';pip.style.color='var(--hb)';
+    try{
+      const b64=ev.target.result.split(',')[1];
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:80,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:f2.type||'image/jpeg',data:b64}},{type:'text',text:'Bangladeshi prepaid electricity meter showing taka balance. Reply ONLY with the number like: 1234.50'}]}]})});
+      const data=await res.json();
+      const val=parseFloat((data.content[0]?.text||'').replace(/[^\d.]/g,''));
+      if(val>0){document.getElementById('rb').value=val.toFixed(2);pip.textContent=`✅ AI: ৳${f(val,2)}`;pip.style.color='var(--gr)';}
+      else{pip.textContent='⚠️ Could not read — enter manually';pip.style.color='var(--nb)';}
+    }catch{pip.textContent='⚠️ AI offline — enter manually';pip.style.color='var(--nb)';}
+  };rd.readAsDataURL(f2);
+};
+
+// ===== SAVE READING =====
+window.saveR=async function(){
+  const date=v('rd'),bal=parseFloat(v('rb')),hk=parseFloat(v('rhk'))||0,nk=parseFloat(v('rnk'))||0,note=v('rno');
+  if(!date||isNaN(bal)||bal<0){toast('Fill date & balance','err');return;}
+  const d=D();if(!d){toast('App not ready yet','err');return;}
+  d.readings.push({id:Date.now(),date,bal,hk,nk,note});
+  d.readings.sort((a,b)=>b.date.localeCompare(a.date));
+  closeS('sh-read');
+  renderAll(); // update UI immediately — don't wait for Firebase round-trip
+  toast('Reading saved ✅');
+  await pushToDB(d); // then sync to Firebase in background
+};
+window.saveT=async function(){
+  const date=v('td'),amt=parseFloat(v('ta')),ba=parseFloat(v('tba'))||null,note=v('tn2');
+  if(!date||isNaN(amt)||amt<=0){toast('Fill date & amount','err');return;}
+  const d=D();if(!d){toast('App not ready yet','err');return;}d.topups.push({id:Date.now(),date,amt,ba,note});d.topups.sort((a,b)=>b.date.localeCompare(a.date));d.lastTop=amt;
+  closeS('sh-top');
+  renderAll(); // immediate UI update
+  toast('Top-up saved ✅');
+  await pushToDB(d);
+};
+window.saveNBP=async function(){
+  const date=v('npd'),amt=parseFloat(v('npa')),note=v('npn');
+  if(!date||isNaN(amt)||amt<=0){toast('Fill date & amount','err');return;}
+  const d=D();if(!d){toast('App not ready yet','err');return;}d.nbpay.push({id:Date.now(),date,amt,note});d.nbpay.sort((a,b)=>b.date.localeCompare(a.date));
+  closeS('sh-nbpay');
+  renderAll();
+  toast('Payment saved ✅');
+  await pushToDB(d);
+};
+
+// ===== APPLIANCES =====
+window.openAddA=function(own){
+  document.getElementById('ao').value=own;document.getElementById('aeid').value='';
+  document.getElementById('as-t').textContent=own==='h'?'🏠 Add My Appliance':'🏘️ Add Neighbor Appliance';
+  document.getElementById('as-s').textContent=own==='h'?'Hasib household':'Neighbor sub-meter';
+  ['an','aic2','aw','ah','ad'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('ac2').value='Cooling';document.getElementById('acom').checked=false;
+  window.openS('sh-appl');
+};
+window.openEditA=function(id,own){
+  const _dd=D();if(!_dd)return;
+  const list=own==='h'?_dd.hAppl:_dd.nAppl;const a=list.find(x=>x.id===id);if(!a)return;
+  document.getElementById('ao').value=own;document.getElementById('aeid').value=id;
+  document.getElementById('as-t').textContent='✏️ Edit Appliance';document.getElementById('as-s').textContent='';
+  document.getElementById('an').value=a.name;document.getElementById('aic2').value=a.icon;
+  document.getElementById('aw').value=a.watts;document.getElementById('ah').value=a.hours;
+  document.getElementById('ad').value=a.duty;document.getElementById('ac2').value=a.cat;
+  document.getElementById('acom').checked=!!a.common;window.openS('sh-appl');
+};
+window.saveA=async function(){
+  const own=v('ao'),eid=parseInt(v('aeid'))||0,name=v('an'),icon=v('aic2')||'🔌';
+  const watts=parseFloat(v('aw'))||0,hours=parseFloat(v('ah'))||0,duty=parseFloat(v('ad'))||100;
+  const cat=document.getElementById('ac2').value,common=document.getElementById('acom').checked;
+  if(!name||watts<=0){toast('Name & wattage required','err');return;}
+  const d=D();if(!d){toast('App not ready yet','err');return;}const list=own==='h'?d.hAppl:d.nAppl;
+  if(eid){const i=list.findIndex(x=>x.id===eid);if(i>=0)list[i]={...list[i],name,icon,watts,hours,duty,cat,common};}
+  else list.push({id:Date.now(),name,icon,watts,hours,duty,cat,common,own});
+  window.closeS('sh-appl');
+  renderAll();
+  toast('Saved ✅');
+  await pushToDB(d);
+};
+window.delA=async function(id,own){
+  if(!confirm('Delete?'))return;const d=D();
+  if(own==='h')d.hAppl=d.hAppl.filter(a=>a.id!==id);else d.nAppl=d.nAppl.filter(a=>a.id!==id);
+  renderAll();
+  toast('Deleted');
+  await pushToDB(d);
+};
+function rApplList(list,elId,own,ac){
+  const el=document.getElementById(elId);if(!el)return;
+  if(!list||!list.length){el.innerHTML='<div class="empty"><div class="empty-ic">🔌</div><div>No appliances yet</div></div>';return;}
+  const dk=list.reduce((s,a)=>s+dkwh(a),0),mk=dk*30,est=calcBill(mk).total;
+  el.innerHTML=`<div class="card" style="padding:10px 12px;margin-bottom:9px;"><div style="display:flex;gap:14px;flex-wrap:wrap;">
+    <div><div class="slbl">Daily</div><div style="font-family:var(--fm);font-size:13px;color:${ac}">${f(dk,3)} kWh</div></div>
+    <div><div class="slbl">Monthly</div><div style="font-family:var(--fm);font-size:13px;color:var(--gr)">${f(mk,1)} kWh</div></div>
+    <div><div class="slbl">Bill est.</div><div style="font-family:var(--fm);font-size:13px;color:var(--nb)">৳${f(est,0)}</div></div>
+  </div></div>`+list.map(a=>`<div class="ai2">
+    <div class="ai-em">${a.icon}</div>
+    <div class="ai-info"><div class="ai-name">${a.name}${a.common?' <span class="badge bh" style="font-size:7px">QUICK</span>':''}</div>
+    <div class="ai-det">${a.watts}W · ${a.hours}h/day · ${a.duty}% duty</div>
+    <div class="ai-kwh" style="color:${ac}">${f(dkwh(a),3)} kWh/day</div></div>
+    <button class="btn btn-gh btn-sm btn-ic" style="margin-right:3px" onclick="openEditA(${a.id},'${own}')">✏️</button>
+    <button class="btn btn-rd btn-sm btn-ic" onclick="delA(${a.id},'${own}')">🗑</button>
+  </div>`).join('');
+}
+
+// ===== AI APPLIANCE =====
+let _pa=[];
+window.openAI=function(own){
+  document.getElementById('aiao').value=own;document.getElementById('ait').value='';
+  document.getElementById('aiprev').innerHTML='';
+  document.getElementById('aipp').textContent='💡 Mention quantity, type, and daily hours';document.getElementById('aipp').style.color='var(--hb)';
+  document.getElementById('aipb').style.display='inline-flex';document.getElementById('aicb').style.display='none';
+  _pa=[];window.openS('sh-ai');
+};
+window.parseAI=async function(){
+  const txt=v('ait');if(!txt){toast('Enter description','err');return;}
+  const pip=document.getElementById('aipp');pip.style.display='block';pip.textContent='🤖 Parsing...';pip.style.color='var(--hb)';
+  document.getElementById('aipb').disabled=true;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`Parse appliances from: "${txt}"\nReturn ONLY valid JSON array, no markdown. Each: name, icon(emoji), watts(number), hours(per day), duty(1-100), category(Cooling/Lighting/Refrigeration/Entertainment/Kitchen/Other).`}]})});
+    const data=await res.json();
+    _pa=JSON.parse((data.content[0]?.text||'').replace(/```json|```/g,'').trim());
+    document.getElementById('aiprev').innerHTML=_pa.map(a=>`<div class="ai2" style="margin-bottom:6px"><div class="ai-em">${a.icon}</div><div class="ai-info"><div class="ai-name">${a.name}</div><div class="ai-det">${a.watts}W · ${a.hours}h · ${a.duty}%</div></div><span class="badge bg">NEW</span></div>`).join('');
+    pip.textContent=`✅ Found ${_pa.length} appliances`;pip.style.color='var(--gr)';
+    document.getElementById('aicb').style.display='inline-flex';
+  }catch(e){pip.textContent='⚠️ Failed — try rephrasing';pip.style.color='var(--rd)';}
+  document.getElementById('aipb').disabled=false;
+};
+window.confirmAI=async function(){
+  const own=v('aiao');const d=D();const list=own==='h'?d.hAppl:d.nAppl;
+  _pa.forEach(a=>list.push({id:Date.now()+Math.random()*999|0,name:a.name,icon:a.icon,watts:a.watts,hours:a.hours,duty:a.duty,cat:a.category,common:false,own}));
+  window.closeS('sh-ai');
+  renderAll();
+  toast(`Added ${_pa.length} appliances ✅`);
+  await pushToDB(d);
+};
+
+// ===== HOME =====
+function rHome(){
+  const d=D();if(!d)return;
+  const n=new Date(),M=mp(n.getMonth(),n.getFullYear());
+  const sr=d.readings.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(sr.length){
+    const lat=sr[0];
+    const balEl=document.getElementById('h-bal');
+    balEl.textContent='৳ '+f(lat.bal,2);
+    const lt=d.lastTop||d.topups[0]?.amt||0;
+    const pct=lt>0?Math.min(100,Math.round(lat.bal/lt*100)):50;
+    balEl.style.color=pct>50?'var(--t1)':pct>20?'var(--nb)':'var(--rd)';
+    document.getElementById('h-kwh').textContent=`≈ ${f(uFromT(lat.bal),1)} kWh remaining`;
+    document.getElementById('h-lr').textContent='Last: '+fD(lat.date);
+    document.getElementById('h-bar').style.width=pct+'%';
+    document.getElementById('h-bar').style.background=pct>50?'linear-gradient(90deg,var(--hb),var(--cy))':pct>20?'linear-gradient(90deg,var(--nb),var(--nb2))':'linear-gradient(90deg,var(--rd),var(--nb))';
+    document.getElementById('h-pct').textContent=pct+'% remaining';
+  }else{
+    const balEl=document.getElementById('h-bal');
+    balEl.textContent='৳ 0.00';balEl.style.color='var(--t3)';
+    document.getElementById('h-kwh').textContent='Tap Log to add first reading';
+    document.getElementById('h-lr').textContent='—';document.getElementById('h-pct').textContent='—';
+  }
+  const mR=d.readings.filter(r=>r.date.startsWith(M));
+  const hU=mR.reduce((s,r)=>s+r.hk,0),nU=mR.reduce((s,r)=>s+r.nk,0),tU=hU+nU;
+  const tB=calcBill(tU).total,hs=tU>0?hU/tU:0.5,ns=1-hs;
+  document.getElementById('sp-hu').textContent=f(hU,1)+' kWh';document.getElementById('sp-nu').textContent=f(nU,1)+' kWh';
+  document.getElementById('sp-hb').textContent='৳'+f(tB*hs,0);document.getElementById('sp-nb2').textContent='৳'+f(tB*ns,0);
+  const nn=d.nbName||'Neighbor';
+  document.getElementById('sp-nn').textContent='🏘️ '+nn;
+  const hp=Math.round(hs*100);
+  document.getElementById('sp-bar').children[0].style.width=hp+'%';document.getElementById('sp-bar').children[1].style.width=(100-hp)+'%';
+  const tnbB=d.readings.reduce((s,r)=>{const t=r.hk+r.nk;return s+calcBill(t).total*(t>0?r.nk/t:0);},0);
+  const tpd=d.nbpay.reduce((s,p)=>s+p.amt,0),owed=Math.max(0,tnbB-tpd);
+  if(owed>0){document.getElementById('owcard').style.display='flex';document.getElementById('ow-amt').textContent='৳ '+f(owed,0);document.getElementById('ow-sub').textContent=`৳${f(tpd,0)} paid · ৳${f(tnbB,0)} total`;}
+  else document.getElementById('owcard').style.display='none';
+  const com=d.hAppl.filter(a=>a.common);
+  if(com.length){document.getElementById('qw').style.display='';document.getElementById('qg').innerHTML=com.map(a=>`<div class="qbtn" onclick="qLog(${a.id})"><div class="qi">${a.icon}</div><div class="qn">${a.name}</div><div class="qk">${f(dkwh(a),3)} kWh/day</div></div>`).join('');}
+  else document.getElementById('qw').style.display='none';
+  const d7=[];for(let i=6;i>=0;i--){const dt=new Date(n);dt.setDate(dt.getDate()-i);d7.push(dt.toISOString().split('T')[0]);}
+  drawC('wk-ch',d7.map((dt,i)=>({l:new Date(dt).toLocaleDateString('en-GB',{weekday:'short'}),v:d.readings.filter(r=>r.date===dt).reduce((s,r)=>s+r.hk+r.nk,0)})),65,'var(--hb)');
+  const all=[...d.readings.map(r=>({...r,_t:'r'})),...d.topups.map(t=>({...t,_t:'t'})),...d.nbpay.map(p=>({...p,_t:'p'}))].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  document.getElementById('h-rec').innerHTML=all.length?all.map(e=>liHTML(e)).join(''):`<div class="empty"><div class="empty-ic">⚡</div><div>No data yet. Tap Log to start!</div></div>`;
+}
+window.qLog=async function(id){
+  const d=D();const a=d.hAppl.find(x=>x.id===id);if(!a)return;
+  const k=+(dkwh(a)).toFixed(3);
+  d.sessions.push({id:Date.now(),date:tod(),appl:[a.name],kwh:k,cost:+(k*10).toFixed(2),min:Math.round(a.hours*60)});
+  renderAll();
+  toast(`${a.name} logged ✅`);
+  await pushToDB(d);
+};
+
+// ===== HASIB =====
+function rHasib(){
+  const d=D();if(!d)return;
+  const n=new Date(),M=mp(n.getMonth(),n.getFullYear());
+  const mR=d.readings.filter(r=>r.date.startsWith(M));
+  const hU=mR.reduce((s,r)=>s+r.hk,0),nU=mR.reduce((s,r)=>s+r.nk,0),tU=hU+nU;
+  const tB=calcBill(tU).total,hs=tU>0?hU/tU:0.5,days=new Set(mR.map(r=>r.date)).size||1;
+  const mT=d.topups.filter(t=>t.date.startsWith(M));
+  document.getElementById('hb-mu').textContent=f(hU,1);document.getElementById('hb-mb').textContent='৳'+f(tB*hs,0);
+  document.getElementById('hb-av').textContent=f(hU/days,2);document.getElementById('hb-tp').textContent='৳'+f(mT.reduce((s,t)=>s+t.amt,0),0);
+  rApplList(d.hAppl,'hb-al','h','var(--hb)');
+  const m6=[];for(let i=5;i>=0;i--){const dt=new Date(n);dt.setMonth(dt.getMonth()-i);m6.push({M:mp(dt.getMonth(),dt.getFullYear()),l:MO[dt.getMonth()]});}
+  drawC('hb-ch',m6.map(x=>({l:x.l,v:d.readings.filter(r=>r.date.startsWith(x.M)).reduce((s,r)=>s+r.hk,0)})),65,'var(--hb)');
+}
+
+// ===== NEIGHBOR =====
+function rNB(){
+  const d=D();if(!d)return;
+  const nn=d.nbName||'Neighbor';
+  ['nb-tn','sp-nn','rpt-nn'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=(id==='sp-nn'?'🏘️ ':'')+nn;});
+  const n=new Date(),M=mp(n.getMonth(),n.getFullYear());
+  const mR=d.readings.filter(r=>r.date.startsWith(M));
+  const hU=mR.reduce((s,r)=>s+r.hk,0),nU=mR.reduce((s,r)=>s+r.nk,0),tU=hU+nU;
+  const tB=calcBill(tU).total,ns=tU>0?nU/tU:0.5;
+  const tnbB=d.readings.reduce((s,r)=>{const t=r.hk+r.nk;return s+calcBill(t).total*(t>0?r.nk/t:0);},0);
+  const tpd=d.nbpay.reduce((s,p)=>s+p.amt,0),owed=Math.max(0,tnbB-tpd);
+  document.getElementById('nb-mu').textContent=f(nU,1);document.getElementById('nb-mb').textContent='৳'+f(tB*ns,0);
+  document.getElementById('nb-ow').textContent='৳'+f(owed,0);document.getElementById('nb-pd').textContent='৳'+f(tpd,0);
+  const owEnt=d.readings.map(r=>{const t=r.hk+r.nk;return{date:r.date,bill:calcBill(t).total*(t>0?r.nk/t:0)};}).filter(e=>e.bill>0);
+  document.getElementById('nb-owlist').innerHTML=
+    (owEnt.length?owEnt.map(e=>`<div class="oweit"><div><div style="font-size:12px;font-weight:500">${fD(e.date)}</div><div style="font-size:10px;color:var(--t2)">Bill share</div></div><div style="font-family:var(--fm);font-size:13px;color:var(--nb)">৳${f(e.bill,0)}</div></div>`).join(''):'<div class="empty"><div>No neighbor readings yet</div></div>')+
+    (d.nbpay.length?`<div class="ctitle" style="margin-top:12px;margin-bottom:7px">Payments Received</div>`+d.nbpay.map(p=>`<div class="oweit"><div><div style="font-size:12px;font-weight:500">${fD(p.date)}</div><div style="font-size:10px;color:var(--t2)">${p.note||'Payment'}</div></div><div style="display:flex;align-items:center;gap:7px;"><div style="font-family:var(--fm);font-size:13px;color:var(--gr)">+৳${f(p.amt,0)}</div><span class="badge bg">PAID</span><button class="btn btn-rd btn-sm" style="padding:3px 7px" onclick="delNBP(${p.id})">🗑</button></div></div>`).join(''):'');
+  rApplList(d.nAppl,'nb-al','n','var(--nb)');
+}
+window.delNBP=async function(id){if(!confirm('Delete?'))return;const d=D();d.nbpay=d.nbpay.filter(p=>p.id!==id);renderAll();toast('Deleted');await pushToDB(d);};
+
+// ===== HISTORY =====
+function rHist(){
+  const d=D();if(!d)return;
+  document.getElementById('ht-rl').innerHTML=d.readings.length?d.readings.map(r=>`<div class="li"><div class="li-ic" style="background:var(--hbg)">📷</div><div class="li-body"><div class="li-title">৳ ${f(r.bal,2)}</div><div class="li-sub">🏠 ${f(r.hk,1)} kWh &nbsp;·&nbsp; 🏘️ ${f(r.nk,1)} kWh${r.note?' · '+r.note:''}</div><div class="li-date">${fD(r.date)}</div></div><div class="li-right"><span class="badge bh">READING</span><div style="margin-top:5px"><button class="btn btn-rd btn-sm" onclick="delR(${r.id})">🗑</button></div></div></div>`).join(''):'<div class="empty"><div class="empty-ic">📷</div><div>No readings yet</div></div>';
+  document.getElementById('ht-tl').innerHTML=d.topups.length?d.topups.map(t=>`<div class="li"><div class="li-ic" style="background:rgba(16,185,129,.1)">💳</div><div class="li-body"><div class="li-title">+৳ ${f(t.amt,0)}</div><div class="li-sub">${t.note||'Recharge'}${t.ba?' · After: ৳'+f(t.ba,2):''}</div><div class="li-date">${fD(t.date)}</div></div><div class="li-right"><span class="badge bg">TOP-UP</span><div style="margin-top:5px"><button class="btn btn-rd btn-sm" onclick="delT(${t.id})">🗑</button></div></div></div>`).join(''):'<div class="empty"><div class="empty-ic">💳</div><div>No top-ups yet</div></div>';
+  document.getElementById('ht-sl').innerHTML=d.sessions.length?d.sessions.map(s=>`<div class="li"><div class="li-ic" style="background:rgba(167,139,250,.1)">⚡</div><div class="li-body"><div class="li-title">${f(s.kwh,3)} kWh · ${s.min} min</div><div class="li-sub">${s.appl?.join(', ')||''}</div><div class="li-date">${fD(s.date)}</div></div><div class="li-right"><span class="badge bp">SESSION</span></div></div>`).join(''):'<div class="empty"><div class="empty-ic">⚡</div><div>No sessions</div></div>';
+}
+window.delR=async function(id){const d=D();d.readings=d.readings.filter(r=>r.id!==id);renderAll();toast('Deleted');await pushToDB(d);};
+window.delT=async function(id){const d=D();d.topups=d.topups.filter(t=>t.id!==id);renderAll();toast('Deleted');await pushToDB(d);};
+
+// ===== REPORTS =====
+let rM=new Date().getMonth(),rY=new Date().getFullYear();
+window.chM=function(x){rM+=x;if(rM>11){rM=0;rY++;}if(rM<0){rM=11;rY--;}rRpt();};
+function rRpt(){
+  const d=D();if(!d)return;
+  document.getElementById('rpt-ml').textContent=FM[rM]+' '+rY;
+  document.getElementById('rpt-yl').textContent=rY;if(!d)return;
+  const M=mp(rM,rY);
+  const mR=d.readings.filter(r=>r.date.startsWith(M)),mT=d.topups.filter(t=>t.date.startsWith(M));
+  const hU=mR.reduce((s,r)=>s+r.hk,0),nU=mR.reduce((s,r)=>s+r.nk,0),tU=hU+nU;
+  const {total,energy,vat,rows}=calcBill(tU),hs=tU>0?hU/tU:0.5,ns=1-hs;
+  const hB=total*hs,nB=total*ns;
+  document.getElementById('rpt-tb').textContent='৳'+f(total,0);
+  document.getElementById('rpt-tu').textContent=`Total: ${f(tU,1)} kWh · Recharged: ৳${f(mT.reduce((s,t)=>s+t.amt,0),0)}`;
+  document.getElementById('rpt-hu').textContent=f(hU,1)+' kWh';document.getElementById('rpt-nu').textContent=f(nU,1)+' kWh';
+  document.getElementById('rpt-hb').textContent='৳'+f(hB,0);document.getElementById('rpt-nb2').textContent='৳'+f(nB,0);
+  const hp=Math.round(hs*100);document.getElementById('rpt-bar').children[0].style.width=hp+'%';document.getElementById('rpt-bar').children[1].style.width=(100-hp)+'%';
+  const se=document.getElementById('rpt-slabs');
+  if(tU>0){se.innerHTML=`<div class="card" style="padding:11px 12px">`+rows.map(r=>`<div class="srow" style="padding:8px 0"><div class="sinfo"><h4>${r.lbl}</h4><p>৳${r.r}/kWh × ${f(r.u,1)} kWh</p></div><span style="font-family:var(--fm);font-size:12px;color:var(--nb)">৳${f(r.cost,0)}</span></div>`).join('')+`<div class="srow" style="padding:8px 0"><div class="sinfo"><h4>VAT 5% + Demand ৳84 + Meter ৳40</h4></div><span style="font-family:var(--fm);font-size:12px;color:var(--nb)">৳${f(vat+124,0)}</span></div><div style="border-top:1px solid var(--bd);padding-top:9px;margin-top:3px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:13px">Total Bill</span><span style="font-family:var(--fm);font-size:17px;color:var(--gr)">৳${f(total,0)}</span></div><div style="display:flex;justify-content:space-between;padding-top:5px;font-size:10px;color:var(--t2)"><span>🏠 Hasib: ৳${f(hB,0)}</span><span>🏘️ ${d.nbName||'Neighbor'}: ৳${f(nB,0)}</span></div></div>`;}
+  else se.innerHTML='<div class="empty"><div>No readings this month</div></div>';
+  const dim=new Date(rY,rM+1,0).getDate();
+  drawC('rpt-dc',Array.from({length:dim},(_,i)=>{const ds=`${M}-${String(i+1).padStart(2,'0')}`;const show=[0,4,9,14,19,24,29].includes(i);return{l:show?String(i+1):'',v:d.readings.filter(r=>r.date===ds).reduce((s,r)=>s+r.hk+r.nk,0)};}),75,'var(--cy)');
+  const yD=MO.map((m,i)=>{const yM=mp(i,rY);return{l:m,v:d.readings.filter(r=>r.date.startsWith(yM)).reduce((s,r)=>s+r.hk+r.nk,0)};});
+  const yU=yD.reduce((s,x)=>s+x.v,0),yB=yD.reduce((s,x)=>s+calcBill(x.v).total,0);
+  const yT=d.topups.filter(t=>t.date.startsWith(String(rY))).reduce((s,t)=>s+t.amt,0);
+  const yP=yD.reduce((best,x)=>x.v>best.v?x:best,{v:0,l:'—'});
+  document.getElementById('y-u').textContent=f(yU,1);document.getElementById('y-b').textContent='৳'+f(yB,0);
+  document.getElementById('y-t').textContent='৳'+f(yT,0);document.getElementById('y-p').textContent=yP.l;
+  drawC('y-ch',yD,75,'linear-gradient(0deg,var(--hb),var(--pu))');
+}
+
+// ===== CHART =====
+function drawC(id,data,h,color){
+  const el=document.getElementById(id);if(!el)return;
+  const mx=Math.max(...data.map(x=>x.v),.01);
+  el.innerHTML=data.map(x=>{const bh=Math.round(x.v/mx*h);return`<div class="bc" style="height:${h}px"><div class="btr" style="height:${h}px"><div class="bb" style="height:${bh}px;background:${color}"></div></div><div class="blbl">${x.l}</div></div>`;}).join('');
+}
+
+// ===== LOG ENTRY =====
+function liHTML(e){
+  if(e._t==='r')return`<div class="li"><div class="li-ic" style="background:var(--hbg)">📷</div><div class="li-body"><div class="li-title">৳ ${f(e.bal,2)}</div><div class="li-sub">🏠 ${f(e.hk,1)} kWh · 🏘️ ${f(e.nk,1)} kWh</div><div class="li-date">${fD(e.date)}</div></div><div class="li-right"><span class="badge bh">READING</span></div></div>`;
+  if(e._t==='t')return`<div class="li"><div class="li-ic" style="background:rgba(16,185,129,.1)">💳</div><div class="li-body"><div class="li-title">+৳ ${f(e.amt,0)}</div><div class="li-sub">${e.note||'Recharge'}</div><div class="li-date">${fD(e.date)}</div></div><div class="li-right"><span class="badge bg">TOP-UP</span></div></div>`;
+  return`<div class="li"><div class="li-ic" style="background:rgba(16,185,129,.1)">💚</div><div class="li-body"><div class="li-title">Neighbor paid ৳${f(e.amt,0)}</div><div class="li-sub">${e.note||'Payment received'}</div><div class="li-date">${fD(e.date)}</div></div><div class="li-right"><span class="badge bg">PAID</span></div></div>`;
+}
+
+// ===== SETTINGS =====
+function loadCfg(){const d=D();const el=document.getElementById('nb-ni');if(el&&d)el.value=d.nbName||'Neighbor';const cfg=getCfg();if(cfg){const st=document.getElementById('cfg-sync-status');if(st)st.textContent=_localMode?'Local mode':'Connected to Firebase';};}
+window.saveNN=async function(){const d=D();if(!d)return;d.nbName=v('nb-ni');['nb-tn','sp-nn','rpt-nn'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=(id==='sp-nn'?'🏘️ ':'')+d.nbName;});renderAll();await pushToDB(d);};
+window.exportD=function(){const d=D();if(!d)return;const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`electracker_${tod()}.json`;a.click();toast('Exported ✅');};
+window.clearR=async function(){if(!confirm('Delete all readings?'))return;const d=D();d.readings=[];renderAll();toast('Cleared');await pushToDB(d);};
+window.resetAll=async function(){if(!confirm('RESET ALL DATA?'))return;if(!confirm('Permanently delete everything?'))return;localStorage.clear();try{await window._fbSet(window._fbRef(window._fbDB,'electracker'),null);}catch(e){}location.reload();};
+
+// ===== EXPORT PRE-FILLED APP =====
+window.exportApp=function(){
+  const cfg=getCfg();
+  if(!cfg){toast('No Firebase config to embed','err');return;}
+  let src=document.documentElement.outerHTML;
+  // inject config as auto-fill
+  const inject=`<script>window.addEventListener('DOMContentLoaded',function(){const c=${JSON.stringify(cfg)};['cfg-apikey','cfg-auth','cfg-dburl','cfg-projid','cfg-appid'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.value=[c.apiKey,c.authDomain,c.databaseURL,c.projectId,c.appId][i];});});<\/script>`;
+  src=src.replace('</head>',inject+'</head>');
+  const b=new Blob([src],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ElecTracker_prefilled.html';a.click();
+  toast('Pre-filled file exported! Share this with family 📤');
+};
+
+// ===== TOAST =====
+window.toast=function(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);};
+
+// ===== RENDER ALL =====
+function renderAll(){rHome();rHasib();rNB();rHist();rRpt();}
+
+// ===== INSTALL HINT =====
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();window._ip=e;
+  const h=document.createElement('div');
+  h.style.cssText='position:fixed;top:calc(var(--st)+4px);right:10px;background:var(--hb);color:#fff;border-radius:9px;padding:7px 12px;font-size:11px;font-weight:600;z-index:999;cursor:pointer;box-shadow:0 4px 16px rgba(59,130,246,.4)';
+  h.textContent='📲 Install App';h.onclick=()=>{window._ip.prompt();h.remove();};
+  document.body.appendChild(h);setTimeout(()=>h.remove&&h.remove(),8000);
+});
+
+// ===== START =====
+appStart();
+</script>
+</body>
+</html>
